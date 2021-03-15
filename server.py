@@ -28,6 +28,7 @@ import os
 import pandas as pd
 import numpy as np
 
+print("Loading features...")
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
 # Load the open CLIP model
@@ -52,8 +53,10 @@ moat_features = np.load("moat-dataset/features.npy")
 # Convert features to Tensors: Float32 on CPU and Float16 on GPU
 if device == "cpu":
   photo_features = torch.from_numpy(photo_features).float().to(device)
+  moat_features = torch.from_numpy(moat_features).float().to(device)
 else:
   photo_features = torch.from_numpy(photo_features).to(device)
+  moat_features = torch.from_numpy(moat_features).to(device)
 
 # Print some statistics
 print(f"Unsplash photos loaded: {len(photo_ids)}")
@@ -117,7 +120,17 @@ class S(BaseHTTPRequestHandler):
 
         if ("prompt" in objectDict) and isinstance(objectDict["prompt"], list):
            # ignoring null length lists etc
-           best_images = search_unsplash(objectDict["prompt"][0], photo_features, photo_ids, num)           
+           best_images = search_unsplash(objectDict["prompt"][0], photo_features, photo_ids, num)   
+           
+           for ad in moat_selected:
+              try:
+              #search for the moat adm
+                 ad_index = moat_ids.index(ad)
+                 print('The index of', ad, 'in the list is:', ad_index)
+                 best_images += search_unsplash_with_moat_index(ad_index, photo_features, photo_ids, moat_features, num)
+              except ValueError:
+                 print(f'ad {ad} requested but not found')
+              
            message =  json.dumps(best_images)
         else: 
            message = error        
@@ -152,6 +165,14 @@ def search_unsplash(search_query, photo_features, photo_ids, results_count=3):
 
    return best_photo_ids
 
+def search_unsplash_with_moat_index(ad_index, photo_features, photo_ids, moat_features, results_count=3):
+
+  # Find the best matches
+  best_photo_ids = find_best_matches(torch.reshape(moat_features[ad_index], (1,-1)), photo_features, photo_ids, results_count)
+
+  # Display the best photos
+  return best_photo_ids
+
 def run(server_class=HTTPServer, handler_class=S, port=8000):
     logging.basicConfig(level=logging.INFO)
     server_address = ('', port)
@@ -168,7 +189,6 @@ def run(server_class=HTTPServer, handler_class=S, port=8000):
 
 if __name__ == '__main__':
     from sys import argv
-
     if len(argv) == 2:
         run(port=int(argv[1]))
     else:

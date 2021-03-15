@@ -1,4 +1,5 @@
 # pip install git+https://github.com/openai/CLIP.git
 # t2.large AWS instance, 200GB storage (no CUDA)
-# copy files features.npy from AWS buckets
+# copy files features.npy from AWS buckets into respective directories:
 # https://moat-dataset.s3-us-west-2.amazonaws.com/features.npy
+# https://unsplash-dataset.s3-us-west-2.amazonaws.com/features.npy

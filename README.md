@@ -1,6 +1,11 @@
 # unsplash-search
 
-REST µservice for semantic and reverse image search of unsplash.
+REST µservice for semantic and reverse image search of unsplash. Requires:
+
+1. t2.large AWS instance, 200GB storage (no CUDA)
+2. moat.com features dataset in directory moat-dataset/ available here: https://moat-dataset.s3-us-west-2.amazonaws.com/features.npy
+3. unsplash.com features dataset in directory unsplash-dataset/ available here: https://unsplash-dataset.s3-us-west-2.amazonaws.com/features.npy
+
 Usage:
 
 ```
